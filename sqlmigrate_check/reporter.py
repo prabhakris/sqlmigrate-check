@@ -39,6 +39,11 @@ class Report:
             for r in self.filtered_results
         )
 
+    @property
+    def issue_count(self) -> int:
+        """Total number of issues across all filtered results."""
+        return sum(len(r.issues) for r in self.filtered_results)
+
     def render(self) -> str:
         lines: list[str] = []
         for result in self.filtered_results:
