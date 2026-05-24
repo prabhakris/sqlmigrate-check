@@ -15,35 +15,49 @@ from sqlmigrate_check.rules import (
 )
 
 # ---------------------------------------------------------------------------
+# Built-in rule definitions: (rule_id, description, severity_default, handler)
+# ---------------------------------------------------------------------------
+
+_BUILTIN_RULES = [
+    (
+        "drop-table",
+        "DROP TABLE destroys data permanently.",
+        "danger",
+        check_drop_table,
+    ),
+    (
+        "drop-column",
+        "DROP COLUMN removes a column and its data.",
+        "danger",
+        check_drop_column,
+    ),
+    (
+        "truncate",
+        "TRUNCATE removes all rows from a table.",
+        "danger",
+        check_truncate,
+    ),
+    (
+        "add-not-null-without-default",
+        "Adding a NOT NULL column without a DEFAULT blocks writes on large tables.",
+        "danger",
+        check_add_not_null_without_default,
+    ),
+    (
+        "rename-table",
+        "RENAME TABLE may break application queries that reference the old name.",
+        "warning",
+        check_rename_table,
+    ),
+]
+
+# ---------------------------------------------------------------------------
 # Register every built-in rule exactly once.
 # ---------------------------------------------------------------------------
 
-rule_registry.register(
-    rule_id="drop-table",
-    description="DROP TABLE destroys data permanently.",
-    severity_default="danger",
-)(check_drop_table)
-
-rule_registry.register(
-    rule_id="drop-column",
-    description="DROP COLUMN removes a column and its data.",
-    severity_default="danger",
-)(check_drop_column)
-
-rule_registry.register(
-    rule_id="truncate",
-    description="TRUNCATE removes all rows from a table.",
-    severity_default="danger",
-)(check_truncate)
-
-rule_registry.register(
-    rule_id="add-not-null-without-default",
-    description="Adding a NOT NULL column without a DEFAULT blocks writes on large tables.",
-    severity_default="danger",
-)(check_add_not_null_without_default)
-
-rule_registry.register(
-    rule_id="rename-table",
-    description="RENAME TABLE may break application queries that reference the old name.",
-    severity_default="warning",
-)(check_rename_table)
+for _rule_id, _description, _severity, _handler in _BUILTIN_RULES:
+    rule_registry.register(
+        rule_id=_rule_id,
+        description=_description,
+        severity_default=_severity,
+    )(_handler)
