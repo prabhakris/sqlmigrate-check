@@ -8,13 +8,32 @@ from sqlmigrate_check.trend import TrendDelta, TrendSnapshot
 
 
 def _sign(n: int) -> str:
+    """Return a string representation of *n* with an explicit leading sign."""
     return f"+{n}" if n > 0 else str(n)
+
+
+def _status_line(delta: TrendDelta) -> str:
+    """Return a single status line summarising whether the delta is a regression, improvement, or neutral."""
+    if delta.is_regressing:
+        return "  ⚠  Regression detected."
+    if delta.is_improving:
+        return "  ✓  Improvement detected."
+    return "  –  No change."
 
 
 def format_trend_text(
     current: TrendSnapshot,
     delta: Optional[TrendDelta] = None,
 ) -> str:
+    """Return a human-readable trend report.
+
+    Args:
+        current: The most recent snapshot to display.
+        delta: Optional comparison against a previous snapshot.
+
+    Returns:
+        A multi-line string suitable for printing to a terminal.
+    """
     lines = [
         "Trend Report",
         "============",
@@ -38,12 +57,7 @@ def format_trend_text(
             for rule, d in sorted(changed_rules.items()):
                 lines.append(f"    {rule}: {_sign(d)}")
 
-        if delta.is_regressing:
-            lines.append("  ⚠  Regression detected.")
-        elif delta.is_improving:
-            lines.append("  ✓  Improvement detected.")
-        else:
-            lines.append("  –  No change.")
+        lines.append(_status_line(delta))
 
     return "\n".join(lines)
 
@@ -52,6 +66,15 @@ def format_trend_json(
     current: TrendSnapshot,
     delta: Optional[TrendDelta] = None,
 ) -> str:
+    """Return a JSON string representation of the trend report.
+
+    Args:
+        current: The most recent snapshot to serialise.
+        delta: Optional comparison against a previous snapshot.
+
+    Returns:
+        A pretty-printed JSON string.
+    """
     payload: dict = {"current": current.to_dict()}
     if delta is not None:
         payload["delta"] = {
