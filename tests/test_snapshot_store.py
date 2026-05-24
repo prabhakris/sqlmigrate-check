@@ -55,6 +55,15 @@ def test_save_snapshots_trims_to_max(tmp_path: Path) -> None:
     assert loaded[0].timestamp == "2024-01-06T00:00:00"
 
 
+def test_save_snapshots_max_zero_stores_nothing(tmp_path: Path) -> None:
+    """Saving with max_snapshots=0 should result in an empty store."""
+    p = tmp_path / "store.json"
+    snaps = [_snap(ts="2024-01-01T00:00:00"), _snap(ts="2024-01-02T00:00:00")]
+    save_snapshots(snaps, path=p, max_snapshots=0)
+    loaded = load_snapshots(p)
+    assert loaded == []
+
+
 def test_append_snapshot_creates_store(tmp_path: Path) -> None:
     p = tmp_path / "store.json"
     result = append_snapshot(_snap(), path=p)
