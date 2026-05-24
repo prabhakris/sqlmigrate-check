@@ -53,3 +53,12 @@ def test_only_matching_line_suppressed():
     issues = check_drop_table(sql)
     assert len(issues) == 1
     assert issues[0].line == 2
+
+
+def test_ignore_next_line_does_not_suppress_same_line():
+    """ignore-next-line comment must not suppress an issue on its own line."""
+    sql = "DROP TABLE a; -- sqlmigrate-check: ignore-next-line\nDROP TABLE b;"
+    issues = check_drop_table(sql)
+    # Line 1 should be flagged; line 2 is suppressed by the ignore-next-line.
+    assert len(issues) == 1
+    assert issues[0].line == 1
